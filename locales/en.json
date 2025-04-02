@@ -1,0 +1,21 @@
+{
+  "create_lobby": "Create a race lobby",
+  "type_race": "Track type",
+  "Short_Track": "Short Track",
+  "Drift_Track": "Drift Track",
+  "Speed_Track": "Speed Track",
+  "Long_Track": "Long Track",
+  "error_input": "Error: Invalid information.",
+  "lobby_created": "Lobby created successfully: %{lobby}",
+  "lobby_exists": "A lobby with this name already exists.",
+  "join_lobby": "Join a lobby",
+  "no_lobby": "No lobbies available.",
+  "select_lobby": "Select a lobby",
+  "joined_lobby": "You joined the lobby: %{lobby}",
+  "lobby_not_found": "Lobby not found.",
+  "leave_lobby": "Leave the lobby",
+  "start_race": "Start the race",
+  "view_lobby": "View lobby",
+  "race_in_progress": "A race is already in progress. Please wait until it ends."
+
+}

@@ -1,0 +1,20 @@
+{
+  "create_lobby": "Créer un lobby de course",
+  "type_race": "Type de circuit",
+  "Short_Track": "Circuit Court",
+  "Drift_Track": "Circuit Drift",
+  "Speed_Track": "Circuit Rapide",
+  "Long_Track": "Circuit Long",
+  "error_input": "Erreur : informations invalides.",
+  "lobby_created": "Lobby créé avec succès : %{lobby}",
+  "lobby_exists": "Ce nom de lobby existe déjà.",
+  "join_lobby": "Rejoindre un lobby",
+  "no_lobby": "Aucun lobby disponible.",
+  "select_lobby": "Choisir un lobby",
+  "joined_lobby": "Tu as rejoint le lobby : %{lobby}",
+  "lobby_not_found": "Ce lobby n'existe pas.",
+  "leave_lobby": "Quitter le lobby",
+  "start_race": "Lancer la course",
+  "view_lobby": "Voir le lobby",
+  "race_in_progress": "Une course est déjà en cours. Attends qu'elle se termine."
+}
