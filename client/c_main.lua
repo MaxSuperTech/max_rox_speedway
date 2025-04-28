@@ -2,6 +2,27 @@ lib.locale()
 local config = require "config.shared"
 local hasLobby = false
 local currentLobby = nil
+local currentProps = {}
+local hasPassed = false
+
+AddEventHandler('onResourceStart', function(resource)
+    if resource ~= GetCurrentResourceName() then return end
+
+    TriggerEvent("speedway:client:destroyprops")
+end)
+
+RegisterNetEvent('speedway:client:destroyprops')
+AddEventHandler('speedway:client:destroyprops', function()
+    for _, obj in ipairs(currentProps) do
+        if DoesEntityExist(obj) then
+            DeleteEntity(obj)
+        end
+    end
+
+    currentProps = {}
+    
+end)
+
 
 RegisterNetEvent('speedway:setLobbyState', function(state)
     hasLobby = state
@@ -30,6 +51,15 @@ CreateThread(function()
             onSelect = function()
                 local infolobby = lib.inputDialog(locale("create_lobby"), {
                     {
+                        type = "number",
+                        label = locale("number_of_laps"),
+                        description = locale("number_of_laps_desc"),
+                        min = 1,
+                        max = 10,
+                        default = 3,
+                        required = true
+                    },
+                    {
                         type = "select",
                         label = locale("type_race"),
                         options = {
@@ -40,15 +70,16 @@ CreateThread(function()
                         },
                         required = true,
                         default = "Short_Track"
-                    },
+                    }
                 })
             
-                if infolobby and infolobby[1] then
-                    local trackType = infolobby[1]
+                if infolobby and infolobby[1] and infolobby[2] then
+                    local trackType = infolobby[2]
+                    local lapCount = tonumber(infolobby[1])
                     local playerName = GetPlayerName(PlayerId())
                     local lobbyName = playerName .. "_" .. math.random(1000, 9999)
             
-                    TriggerServerEvent("speedway:createLobby", lobbyName, trackType)
+                    TriggerServerEvent("speedway:createLobby", lobbyName, trackType, lapCount)
                 else
                     lib.notify({
                         title = "Speedway",
@@ -92,7 +123,7 @@ CreateThread(function()
                 end)
             end,
             canInteract = function()
-                return hasLobby -- bool mis à jour par l'event `speedway:setLobbyState`
+                return hasLobby and not currentLobby
             end
         },
         {
@@ -142,3 +173,121 @@ CreateThread(function()
         }        
     })
 end)
+
+lib.callback.register("speedway:getVehicleChoice", function()
+    local options = {}
+    for _, v in ipairs(config.RaceVehicles) do
+        table.insert(options, { label = v.label, value = v.model })
+    end
+
+    local selection = lib.inputDialog(locale("choose_vehicle_title"), {
+        {
+            type = "select",
+            label = locale("choose_vehicle_label"),
+            options = options,
+            required = true,
+            default = config.RaceVehicles[1].model
+        }
+    },{allowCancel = false})
+
+    return selection and selection[1] or nil
+end)
+
+
+RegisterNetEvent("speedway:prepareStart", function(data)
+    local trackType = data.track
+
+    -- Spawn des props (ok à garder client side)
+    local props = config.TrackProps[trackType]
+    if props then
+        for _, propData in ipairs(props) do
+            local model = propData.prop
+            for _, coord in ipairs(propData.cords) do
+                local obj = CreateObject(model, coord.x, coord.y, coord.z - 1.0, false, false, false)
+                PlaceObjectOnGroundProperly(obj)
+                SetEntityHeading(obj, coord.w)
+                FreezeEntityPosition(obj, true)
+                table.insert(currentProps, obj)
+            end
+        end
+    end
+
+    -- On récupère le véhicule déjà spawn par le serveur
+    local veh = NetworkGetEntityFromNetworkId(data.netId)
+    local ped = PlayerPedId()
+    while not DoesEntityExist(veh) do Wait(0) end
+
+    SetEntityAsMissionEntity(veh, true, true)
+    FreezeEntityPosition(veh, true)
+    SetPedIntoVehicle(ped, veh, -1)
+
+
+
+    for i = 3, 1, -1 do
+        PlaySoundFrontend(-1, "3_2_1", "HUD_MINI_GAME_SOUNDSET", true)
+        ShowCountdownText(tostring(i), 1000)
+    end
+    
+    FreezeEntityPosition(veh, false)
+    PlaySoundFrontend(-1, "GO", "HUD_MINI_GAME_SOUNDSET", true)
+    ShowCountdownText("GO", 1000)
+end)
+
+RegisterNetEvent("speedway:updateLap", function(current, total)
+    lib.notify({
+        title = "🏁 Speedway",
+        description = ("Tour %s/%s"):format(current, total),
+        type = "inform"
+    })
+end)
+
+RegisterNetEvent("speedway:youFinished", function()
+    lib.notify({
+        title = "🏁 Speedway",
+        description = "Tu as terminé la course !",
+        type = "success"
+    })
+end)
+
+RegisterNetEvent("speedway:finalRanking", function(data)
+    local text = "🏆 Classement final :\n"
+    for i, res in ipairs(data.allResults) do
+        local name = GetPlayerName(GetPlayerFromServerId(res.id)) or ("ID " .. res.id)
+        local seconds = math.floor(res.time / 1000)
+        text = text .. ("%d. %s - %ds\n"):format(i, name, seconds)
+    end
+
+    lib.alertDialog({
+        header = "Résultats",
+        content = text,
+        centered = true
+    })
+end)
+
+
+-- 🏁 Zone de la ligne de départ (compteur de tours)
+
+local startLineZone = lib.zones.poly({
+	name = "start_line",
+	points = {
+		vec3(-2760.0, 8064.0, 44.0),
+		vec3(-2757.5500488281, 8103.0, 44.0),
+		vec3(-2941.6000976562, 8129.25, 44.0),
+		vec3(-2948.9499511719, 8074.5498046875, 44.0),
+		vec3(-2905.0, 8084.0, 44.0),
+	},
+	thickness = 3.0,
+	debug = config.debug,
+
+	onExit = function()
+		if currentLobby and currentLobby.name and not hasPassed then
+			hasPassed = true
+			TriggerServerEvent("speedway:lapPassed", currentLobby.name)
+
+			CreateThread(function()
+				Wait(3000)
+				hasPassed = false
+			end)
+		end
+	end
+})
