@@ -1,0 +1,28 @@
+{
+    "create_lobby": "Renn-Lobby erstellen",
+    "number_of_laps": "Anzahl der Runden",
+    "number_of_laps_desc": "Wie viele Runden sollen gefahren werden",
+    "type_race": "Streckentyp",
+    "Short_Track": "Kurze Strecke",
+    "Drift_Track": "Drift-Strecke",
+    "Speed_Track": "Hochgeschwindigkeitsstrecke",
+    "Long_Track": "Lange Strecke",
+    "error_input": "Fehler: Ungültige Eingabe.",
+    "lobby_created": "Lobby erfolgreich erstellt: %s",
+    "lobby_exists": "Dieser Lobby-Name existiert bereits.",
+    "join_lobby": "Lobby beitreten",
+    "no_lobby": "Keine verfügbaren Lobbys.",
+    "select_lobby": "Lobby auswählen",
+    "choose_vehicle_title": "Fahrzeug auswählen",
+    "choose_vehicle_label": "Wähle dein Fahrzeug für das Rennen",
+    "joined_lobby": "Du bist der Lobby beigetreten: %s",
+    "lobby_not_found": "Diese Lobby existiert nicht.",
+    "leave_lobby": "Lobby verlassen",
+    "start_race": "Rennen starten",
+    "view_lobby": "Lobby anzeigen",
+    "race_in_progress": "Ein Rennen läuft bereits. Bitte warte, bis es beendet ist.",
+    "lobby_closed_by_owner": "Die Lobby %s wurde vom Besitzer geschlossen.",
+    "not_authorized_to_start_race": "Du bist nicht berechtigt, dieses Rennen zu starten.",
+    "too_many_players_grid": "Zu viele Spieler für das Startfeld."
+  }
+  
